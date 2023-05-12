@@ -1,5 +1,5 @@
 {
-  "name": "react_hardhat_template",
+  "name": "jacd",
   "version": "1.0.0",
   "description": "",
   "dependencies": {
@@ -20,7 +20,7 @@
     "eject": "react-scripts eject"
   },
   "author": "gregory@dappuniversity.com",
-  "license": "ISC",
+  "license": "MIT",
   "eslintConfig": {
     "extends": [
       "react-app",
