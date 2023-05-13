@@ -22,12 +22,21 @@ contract DAO {
     uint256 public proposalIndex;
     mapping(uint256 => Proposal) public proposals;
 
+    mapping(address => mapping(uint256 => bool)) public votes;
+
     event Propose (
-        uint256 index,
+        uint256 indexed index,
         address receiver,
         uint256 amount,
-        address creator
+        address indexed creator
     );
+
+    event Vote (
+        uint256 indexed index,
+        address indexed voter
+    );
+
+    event Finalize(uint256 indexed index);
 
     modifier onlyInvestor() {
         require(token.balanceOf(msg.sender) > 0, 'Not an investor');
@@ -54,15 +63,57 @@ contract DAO {
         proposalIndex += 1;
 
         // Create new proposal
-        Proposal storage proposal = proposals[proposalIndex];
-        proposal.index = proposalIndex;
-        proposal.name = _name;
-        proposal.receiver = _receiver;
-        proposal.amount = _amount;
-        proposal.votes = 0;
-        proposal.finalized = false;
+        proposals[proposalIndex] = Proposal(
+            proposalIndex,
+            _name,
+            _receiver,
+            _amount,
+            0,
+            false
+        );
 
-        //Emit propose event
+        // Emit propose event
         emit Propose(proposalIndex, _receiver, _amount, msg.sender);
+    }
+
+    function vote(uint256 _index) external onlyInvestor {
+        // Fetch proposal
+        Proposal storage proposal = proposals[_index];
+
+        // Investors can only vote once
+        require(!votes[msg.sender][_index], 'Investor has already voted');
+
+        // Update votes mapping
+        votes[msg.sender][_index] = true;
+
+        // Update votes in propsal struct
+        proposal.votes += token.balanceOf(msg.sender);
+
+        // Emit vote event
+        emit Vote(_index, msg.sender);
+    }
+
+    function finalizeProposal(uint256 _index) external onlyInvestor {
+        // Fetch proposal
+        Proposal storage proposal = proposals[_index];
+
+        // Check proposal isn't already finalized
+        require(!proposal.finalized, 'Proposal is already finalized');
+
+        // Mark proposal as finalized
+        proposal.finalized = true;
+
+        // Check if proposal has enough votes for a quorum
+        require(proposal.votes >= quorum, 'Insufficient votes');
+
+        // Check contract has enough ETH
+        require(address(this).balance >= proposal.amount, 'Insufficient ETH balance');
+
+        // Send ETH to receiver{{
+        (bool sent, ) = proposal.receiver.call{ value: proposal.amount }('');
+        require(sent);
+
+        // Emit finalized event
+        emit Finalize(_index);
     }
 }
