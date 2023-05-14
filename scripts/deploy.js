@@ -17,6 +17,15 @@ async function main() {
 
   await token.deployed()
   console.log(`Token deployed to: ${token.address}\n`)
+
+  //Deploy DAO with a quorum of > 50% max supply
+  const quorum = ethers.utils.parseUnits((MAX_SUPPLY / 2).toString(), 'ether').add(1)
+
+  const DAO = await hre.ethers.getContractFactory('DAO')
+  let dao = await DAO.deploy(token.address, quorum)
+
+  await dao.deployed()
+  console.log(`DAO deployed to: ${dao.address}\n`)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
