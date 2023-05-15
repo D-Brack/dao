@@ -81,6 +81,9 @@ async function main() {
     // Finalize proposal
     transaction = await dao.connect(investor1).finalizeProposal(i + 1)
     result = await transaction.wait()
+
+    let index = await dao.connect(funder).proposalIndex()
+    let proposal = await dao.connect(funder).proposals(i)
   }
 
   console.log('Creating open proposal...\n')
