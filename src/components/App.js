@@ -21,6 +21,7 @@ function App() {
   const [daoTreasury, setDaoTreasury] = useState(0)
 
   const [proposals, setProposals] = useState(null)
+  const [quorum, setQuorum] = useState(0)
 
   const [isLoading, setIsLoading] = useState(true)
 
@@ -31,8 +32,8 @@ function App() {
     const { chainId } = await provider.getNetwork()
 
     // Fetch contracts
-    const DAO = new ethers.Contract(config[chainId].dao.address, DAO_ABI, provider)
-    setDao(DAO)
+    const dao = new ethers.Contract(config[chainId].dao.address, DAO_ABI, provider)
+    setDao(dao)
 
     // Fetch accounts
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
@@ -40,20 +41,24 @@ function App() {
     setAccount(account)
 
     // Fetch dao account balance
-    let treasuryBalance = await provider.getBalance(DAO.address)
+    let treasuryBalance = await provider.getBalance(dao.address)
     treasuryBalance = ethers.utils.formatUnits(treasuryBalance, 18)
     setDaoTreasury(treasuryBalance)
 
     // Fetch proposals
-    const proposalIndex = await DAO.proposalIndex()
+    const proposalIndex = await dao.proposalIndex()
     let proposals = []
 
     for(var i = 1; i <= proposalIndex; i++) {
-      const proposal = await DAO.proposals(i)
+      const proposal = await dao.proposals(i)
       proposals.push(proposal)
     }
 
     setProposals(proposals)
+
+    // Fetch quorum
+    const quorum = await dao.quorum()
+    setQuorum(quorum)
 
     setIsLoading(false)
   }
@@ -73,7 +78,7 @@ function App() {
     <Container>
       <Navigation account={account} />
 
-      <h1 className='my-4 text-center'>DApp U Dao</h1>
+      <h1 className='my-4 text-center'>DApp U dao</h1>
 
       {isLoading ? (
         <Loading />
@@ -82,7 +87,8 @@ function App() {
           <hr />
             <p className='text-center'><strong>Treasury ETH Balance:</strong> {daoTreasury} ETH</p>
           <hr />
-          <Proposals proposals={proposals} />
+          <h4 className='text-center'>Proposals</h4>
+          <Proposals proposals={proposals} quorum={quorum} provider={provider} dao={dao} setIsLoading={setIsLoading} />
         </div>
       )}
     </Container>

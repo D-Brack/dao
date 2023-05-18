@@ -32,7 +32,9 @@ async function main() {
   investor1 = accounts[1]
   investor2 = accounts[2]
   investor3 = accounts[3]
-  receiver = accounts[4]
+  investor4 = accounts[4]
+  investor5 = accounts[5]
+  receiver = accounts[6]
 
   // Fetch contracts
   console.log('Fetching contracts...')
@@ -56,6 +58,12 @@ async function main() {
   transaction = await token.connect(funder).transfer(investor3.address, amount)
   result = await transaction.wait()
 
+  transaction = await token.connect(funder).transfer(investor4.address, amount)
+  result = await transaction.wait()
+
+  transaction = await token.connect(funder).transfer(investor5.address, amount)
+  result = await transaction.wait()
+
   // Fund DAO & create proposals
   console.log('Funding DAO...\n')
   transaction = await funder.sendTransaction({ to: dao.address, value: ether(1000) })
@@ -69,8 +77,8 @@ async function main() {
     result = await transaction.wait()
 
     // Vote on proposal to reach quorum
-    transaction = await dao.connect(investor1).vote(i + 1)
-    result = await transaction.wait()
+    // transaction = await dao.connect(investor1).vote(i + 1)
+    // result = await transaction.wait()
 
     transaction = await dao.connect(investor2).vote(i + 1)
     result = await transaction.wait()
@@ -78,12 +86,15 @@ async function main() {
     transaction = await dao.connect(investor3).vote(i + 1)
     result = await transaction.wait()
 
-    // Finalize proposal
-    transaction = await dao.connect(investor1).finalizeProposal(i + 1)
+    transaction = await dao.connect(investor4).vote(i + 1)
     result = await transaction.wait()
 
-    let index = await dao.connect(funder).proposalIndex()
-    let proposal = await dao.connect(funder).proposals(i)
+    transaction = await dao.connect(investor5).vote(i + 1)
+    result = await transaction.wait()
+
+    // Finalize proposal
+    // transaction = await dao.connect(investor1).finalizeProposal(i + 1)
+    // result = await transaction.wait()
   }
 
   console.log('Creating open proposal...\n')
@@ -92,10 +103,10 @@ async function main() {
   result = await transaction.wait()
 
   // Vote
-  transaction = await dao.connect(investor1).vote(i + 1)
+  transaction = await dao.connect(investor2).vote(i + 1)
   result = await transaction.wait()
 
-  transaction = await dao.connect(investor2).vote(i + 1)
+  transaction = await dao.connect(investor3).vote(i + 1)
   result = await transaction.wait()
 
   console.log('Finished seeding!')
