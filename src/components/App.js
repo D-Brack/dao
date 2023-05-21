@@ -6,6 +6,7 @@ import { ethers } from 'ethers'
 import Navigation from './Navigation';
 import Loading from './Loading';
 import Proposals from './Proposals'
+import Create from './Create'
 
 // ABIs
 import DAO_ABI from '../abis/DAO.json'
@@ -78,15 +79,18 @@ function App() {
     <Container>
       <Navigation account={account} />
 
-      <h1 className='my-4 text-center'>DApp U dao</h1>
+      <h1 className='my-4 text-center'>DApp U DAO</h1>
 
       {isLoading ? (
         <Loading />
       ) : (
         <div>
+          <Create provider={provider} dao={dao} setIsLoading={setIsLoading} />
+
           <hr />
             <p className='text-center'><strong>Treasury ETH Balance:</strong> {daoTreasury} ETH</p>
           <hr />
+          
           <h4 className='text-center'>Proposals</h4>
           <Proposals proposals={proposals} quorum={quorum} provider={provider} dao={dao} setIsLoading={setIsLoading} />
         </div>
