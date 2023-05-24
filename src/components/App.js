@@ -10,6 +10,7 @@ import Create from './Create'
 
 // ABIs
 import DAO_ABI from '../abis/DAO.json'
+import TOKEN_ABI from '../abis/Token.json'
 
 // Config
 import config from '../config.json';
@@ -21,7 +22,10 @@ function App() {
   const [dao, setDao] = useState(null)
   const [daoTreasury, setDaoTreasury] = useState(0)
 
+  const [token, setToken] = useState(null)
+
   const [proposals, setProposals] = useState(null)
+  const [hasVoted, setHasVoted] = useState(false)
   const [quorum, setQuorum] = useState(0)
 
   const [isLoading, setIsLoading] = useState(true)
@@ -36,26 +40,35 @@ function App() {
     const dao = new ethers.Contract(config[chainId].dao.address, DAO_ABI, provider)
     setDao(dao)
 
+    const token = new ethers.Contract(config[chainId].token.address, TOKEN_ABI, provider)
+    setToken(token)
+
     // Fetch accounts
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
     const account = ethers.utils.getAddress(accounts[0])
     setAccount(account)
 
     // Fetch dao account balance
-    let treasuryBalance = await provider.getBalance(dao.address)
+    //let treasuryBalance = await provider.getBalance(dao.address)
+    let treasuryBalance = await token.balanceOf(dao.address)
     treasuryBalance = ethers.utils.formatUnits(treasuryBalance, 18)
     setDaoTreasury(treasuryBalance)
 
-    // Fetch proposals
+    // Fetch proposals & voted status
     const proposalIndex = await dao.proposalIndex()
     let proposals = []
+    let voteStatuses = []
 
     for(var i = 1; i <= proposalIndex; i++) {
       const proposal = await dao.proposals(i)
       proposals.push(proposal)
+
+      const voted = await dao.votes(account, i)
+      voteStatuses.push(voted)
     }
 
     setProposals(proposals)
+    setHasVoted(voteStatuses)
 
     // Fetch quorum
     const quorum = await dao.quorum()
@@ -88,11 +101,19 @@ function App() {
           <Create provider={provider} dao={dao} setIsLoading={setIsLoading} />
 
           <hr />
-            <p className='text-center'><strong>Treasury ETH Balance:</strong> {daoTreasury} ETH</p>
+            <p className='text-center'><strong>Treasury Token Balance:</strong> {daoTreasury} DAPP</p>
           <hr />
-          
+
           <h4 className='text-center'>Proposals</h4>
-          <Proposals proposals={proposals} quorum={quorum} provider={provider} dao={dao} setIsLoading={setIsLoading} />
+          <Proposals
+            proposals={proposals}
+            quorum={quorum}
+            provider={provider}
+            dao={dao}
+            token={token}
+            setIsLoading={setIsLoading}
+            account={account}
+            hasVoted={hasVoted} />
         </div>
       )}
     </Container>

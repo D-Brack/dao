@@ -9,7 +9,7 @@ const hre = require("hardhat");
 async function main() {
   const NAME = 'Dapp University'
   const SYMBOL = 'DAPP'
-  const MAX_SUPPLY = '1000000'
+  const MAX_SUPPLY = '1000100'
 
   // Deploy Token
   const Token = await hre.ethers.getContractFactory('Token')
@@ -19,10 +19,10 @@ async function main() {
   console.log(`Token deployed to: ${token.address}\n`)
 
   //Deploy DAO with a quorum of > 50% max supply
-  const quorum = ethers.utils.parseUnits((MAX_SUPPLY / 2).toString(), 'ether').add(1)
+  const quorum = ethers.utils.parseUnits(((MAX_SUPPLY - 100) / 2).toString(), 'ether').add(1)
 
   const DAO = await hre.ethers.getContractFactory('DAO')
-  let dao = await DAO.deploy(token.address, quorum)
+  let dao = await DAO.deploy(token.address, quorum, token.address)
 
   await dao.deployed()
   console.log(`DAO deployed to: ${dao.address}\n`)

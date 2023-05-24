@@ -66,30 +66,32 @@ async function main() {
 
   // Fund DAO & create proposals
   console.log('Funding DAO...\n')
-  transaction = await funder.sendTransaction({ to: dao.address, value: ether(1000) })
+  //transaction = await funder.sendTransaction({ to: dao.address, value: ether(1000) })
+  transaction = await token.connect(funder).transfer(dao.address, tokens(100))
   result = await transaction.wait()
 
   console.log('Creating, voting on, and finalizing proposals...\n')
 
   for(var i = 0; i < 3; i++) {
     // Create proposal
-    transaction = await dao.connect(investor1).createProposal(`Proposal ${i + 1}`, receiver.address, ether(50))
+    //transaction = await dao.connect(investor1).createProposal(`Proposal ${i + 1}`, `Description ${i + 1}`, receiver.address, ether(50))
+    transaction = await dao.connect(investor1).createProposal(`Proposal ${i + 1}`, `Description ${i + 1}`, receiver.address, tokens(50))
     result = await transaction.wait()
 
     // Vote on proposal to reach quorum
     // transaction = await dao.connect(investor1).vote(i + 1)
     // result = await transaction.wait()
 
-    transaction = await dao.connect(investor2).vote(i + 1)
+    transaction = await dao.connect(investor2).voteFor(i + 1)
     result = await transaction.wait()
 
-    transaction = await dao.connect(investor3).vote(i + 1)
+    transaction = await dao.connect(investor3).voteFor(i + 1)
     result = await transaction.wait()
 
-    transaction = await dao.connect(investor4).vote(i + 1)
+    transaction = await dao.connect(investor4).voteFor(i + 1)
     result = await transaction.wait()
 
-    transaction = await dao.connect(investor5).vote(i + 1)
+    transaction = await dao.connect(investor5).voteFor(i + 1)
     result = await transaction.wait()
 
     // Finalize proposal
@@ -99,14 +101,15 @@ async function main() {
 
   console.log('Creating open proposal...\n')
   // Create
-  transaction = await dao.connect(investor1).createProposal(`Proposal 4`, receiver.address, ether(50))
+  //transaction = await dao.connect(investor1).createProposal(`Proposal 4`, `Description 4`, receiver.address, ether(50))
+  transaction = await dao.connect(investor1).createProposal(`Proposal 4`, `Description 4`, receiver.address, tokens(50))
   result = await transaction.wait()
 
   // Vote
-  transaction = await dao.connect(investor2).vote(i + 1)
+  transaction = await dao.connect(investor2).voteFor(i + 1)
   result = await transaction.wait()
 
-  transaction = await dao.connect(investor3).vote(i + 1)
+  transaction = await dao.connect(investor3).voteFor(i + 1)
   result = await transaction.wait()
 
   console.log('Finished seeding!')
