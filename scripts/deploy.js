@@ -11,14 +11,12 @@ async function main() {
   const SYMBOL = 'DAPP'
   const MAX_SUPPLY = '1000100'
 
-  // Deploy Token
   const Token = await hre.ethers.getContractFactory('Token')
   let token = await Token.deploy(NAME, SYMBOL, MAX_SUPPLY)
 
   await token.deployed()
   console.log(`Token deployed to: ${token.address}\n`)
 
-  //Deploy DAO with a quorum of > 50% max supply
   const quorum = ethers.utils.parseUnits(((MAX_SUPPLY - 100) / 2).toString(), 'ether').add(1)
 
   const DAO = await hre.ethers.getContractFactory('DAO')

@@ -23,7 +23,7 @@ describe('DAO', () => {
       user
 
   beforeEach(async () => {
-    
+
     // Deploy token
     const Token = await ethers.getContractFactory('Token')
     token = await Token.deploy('DAO Token', 'DAO', tokens(1000100))
@@ -36,16 +36,14 @@ describe('DAO', () => {
     const accounts = await ethers.getSigners()
     deployer = accounts[0]
     investor1 = accounts[1]
-    investor2 = accounts[2] 
-    investor3 = accounts[3] 
-    investor4 = accounts[4] 
-    investor5 = accounts[5] 
+    investor2 = accounts[2]
+    investor3 = accounts[3]
+    investor4 = accounts[4]
+    investor5 = accounts[5]
     receiver = accounts[6]
     user = accounts[7]
     funder = accounts[8]
-    
-    // Fund DAO with ETH
-    //await funder.sendTransaction({ to: dao.address, value: ether(100) })
+
     // Fund DAO with tokens
     await token.transfer(dao.address, tokens(100))
 
@@ -71,10 +69,6 @@ describe('DAO', () => {
       expect(await dao.quorum()).to.equal(tokens(500000).add(1))
     })
 
-    // it('accepts ETH', async () => {
-    //   expect(await ethers.provider.getBalance(dao.address)).to.equal(ether(100).toString())
-    // })
-
     it('accepts tokens', async () => {
       expect(await token.balanceOf(dao.address)).to.equal(tokens(100))
     })
@@ -85,7 +79,6 @@ describe('DAO', () => {
     describe('Success', () => {
 
       beforeEach(async () => {
-        //transaction = await dao.connect(investor1).createProposal('Prop 1', 'Description 1', receiver.address, ether(50))
         transaction = await dao.connect(investor1).createProposal('Prop 1', 'Description 1', receiver.address, tokens(50))
         result = transaction.wait()
       })
@@ -100,14 +93,12 @@ describe('DAO', () => {
         expect(proposal.name).to.equal('Prop 1')
         expect(proposal.description).to.equal('Description 1')
         expect(proposal.receiver).to.equal(receiver.address)
-        //expect(proposal.amount).to.equal(ether(50))
         expect(proposal.amount).to.equal(tokens(50))
         expect(proposal.votes).to.equal(0)
         expect(proposal.finalized).to.equal(false)
       })
 
       it('emits a propose event', async () => {
-        //await expect(transaction).to.emit(dao, 'Propose').withArgs(1, receiver.address, ether(50), investor1.address)
         await expect(transaction).to.emit(dao, 'Propose').withArgs(1, receiver.address, tokens(50), investor1.address)
       })
     })
@@ -115,12 +106,10 @@ describe('DAO', () => {
     describe('Failure', () => {
 
       it('rejects proposals from non-investors', async () => {
-        //await expect(dao.connect(user).createProposal('Prop 1', 'Description 1', receiver.address, ether(50))).to.be.reverted
         await expect(dao.connect(user).createProposal('Prop 1', 'Description 1', receiver.address, tokens(50))).to.be.reverted
       })
 
       it('rejects proposals exceeding ETH balance', async () => {
-        //await expect(dao.connect(investor1).createProposal('Prop 1', 'Description 1', receiver.address, ether(150))).to.be.reverted
         await expect(dao.connect(investor1).createProposal('Prop 1', 'Description 1', receiver.address, tokens(150))).to.be.reverted
       })
     })
@@ -129,7 +118,6 @@ describe('DAO', () => {
   describe('Voting For Proposal', () => {
 
     beforeEach(async () => {
-      //transaction = await dao.connect(investor1).createProposal('Prop 1', 'Description 1', receiver.address, ether(50))
       await expect(dao.connect(investor1).createProposal('Prop 1', 'Description 1', receiver.address, tokens(150))).to.be.reverted
       result = transaction.wait()
     })
@@ -172,7 +160,6 @@ describe('DAO', () => {
   describe('Voting Against Proposal', () => {
 
     beforeEach(async () => {
-      //transaction = await dao.connect(investor1).createProposal('Prop 1', 'Description 1', receiver.address, ether(50))
       await expect(dao.connect(investor1).createProposal('Prop 1', 'Description 1', receiver.address, tokens(150))).to.be.reverted
       result = transaction.wait()
     })
@@ -210,7 +197,6 @@ describe('DAO', () => {
   describe('Governance', () => {
 
     beforeEach(async () => {
-      //transaction = await dao.connect(investor1).createProposal('Prop 1', 'Description 1', receiver.address, ether(50))
       transaction = await dao.connect(investor1).createProposal('Prop 1', 'Description 1', receiver.address, tokens(50))
       result = transaction.wait()
 
@@ -224,7 +210,7 @@ describe('DAO', () => {
     describe('Success', () => {
       let proposal
 
-      beforeEach(async () => { 
+      beforeEach(async () => {
         transaction = await dao.connect(investor3).voteFor(1)
         result = transaction.wait()
 
@@ -233,10 +219,6 @@ describe('DAO', () => {
 
         proposal = await dao.proposals(1)
       })
-
-      // it('sends ETH to the receiver', async () => {
-      //   expect(await ethers.provider.getBalance(receiver.address)).to.equal(ether(10050))
-      // })
 
       it('sends tokens to the receiver', async () => {
         expect(await token.balanceOf(receiver.address)).to.equal(tokens(50))
@@ -252,10 +234,9 @@ describe('DAO', () => {
 
     })
 
-    describe('Failure', () => {      
+    describe('Failure', () => {
 
       it('doesn\'t finalize proposal without a quorum', async () => {
-        //transaction = await dao.connect(investor1).createProposal('Prop 2', 'Description 2', receiver.address, ether(0))
         transaction = await dao.connect(investor1).createProposal('Prop 2', 'Description 2', receiver.address, tokens(0))
         result = transaction.wait()
         await expect(dao.connect(investor1).finalizeProposal(2)).to.be.reverted
@@ -277,8 +258,8 @@ describe('DAO', () => {
         await expect(dao.connect(investor1).finalizeProposal(1)).to.be.reverted
       })
 
-      // 
-      
+      //
+
       it('rejects transfer exceeding tokens balance', async () => {
         transaction = await dao.connect(investor1).createProposal('Prop 3', 'Description 3', receiver.address, tokens(100))
         result = transaction.wait()

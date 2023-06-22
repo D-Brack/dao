@@ -2,13 +2,17 @@ import Table from 'react-bootstrap/Table'
 import Button from 'react-bootstrap/Button'
 import { ethers } from 'ethers'
 
-const Proposals = ({ proposals, quorum, provider, dao, token, setIsLoading, account, hasVoted }) => {
-
- async function getBalance (address) {
-    let balance = await token.balanceOf(address)
-    console.log(balance.toString())
-    return balance.toString()
-  }
+const Proposals = ({
+  proposals,
+  quorum,
+  provider,
+  dao,
+  token,
+  setIsLoading,
+  account,
+  hasVoted,
+  tokenSymbol
+}) => {
 
   const voteForHandler = async (index) => {
 
@@ -37,7 +41,7 @@ const Proposals = ({ proposals, quorum, provider, dao, token, setIsLoading, acco
   }
 
   const finalizeHandler = async (index) => {
-    
+
     try {
       const signer = await provider.getSigner()
       const trasaction = await dao.connect(signer).finalizeProposal(index)
@@ -71,31 +75,51 @@ const Proposals = ({ proposals, quorum, provider, dao, token, setIsLoading, acco
               <td>{proposal.index.toString()}</td>
               <td>{proposal.name}</td>
               <td>{proposal.receiver}</td>
-              <td>{ethers.utils.formatUnits(proposal.amount, 'ether')} DAPP</td>
+              <td>{ethers.utils.formatUnits(proposal.amount, 'ether')} {tokenSymbol}</td>
               <td>{proposal.finalized ? 'Approved' : 'In Progress'}</td>
               <td>{proposal.votes.toString()}</td>
               <td>
                 {!proposal.finalized && !hasVoted[index] ? (
-                  <Button variant='primary' style={{width: '100%'}} onClick={() => voteForHandler(proposal.index)} >Vote For</Button>
+                  <Button
+                    variant='primary'
+                    style={{width: '100%'}}
+                    onClick={() => voteForHandler(proposal.index)}
+                  >
+                    Vote For
+                  </Button>
                 ) : (
                   <></>
-                )} 
+                )}
               </td>
               <td>
                 {!proposal.finalized && !hasVoted[index] && (
-                  <Button variant='primary' style={{width: '100%'}} onClick={() => voteAgainstHandler(proposal.index)} >Vote Against</Button>
+                  <Button
+                    variant='primary'
+                    style={{width: '100%'}}
+                    onClick={() => voteAgainstHandler(proposal.index)}
+                  >
+                    Vote Against
+                  </Button>
                 )}
               </td>
               <td>
                 {proposal.votes.gte(quorum) && !proposal.finalized && (
-                  <Button variant='primary' style={{width: '100%'}} onClick={() => finalizeHandler(proposal.index)} >Finalize</Button>
+                  <Button
+                    variant='primary'
+                    style={{width: '100%'}}
+                    onClick={() => finalizeHandler(proposal.index)}
+                  >
+                    Finalize
+                  </Button>
                 )}
               </td>
             </tr>
           ))}
         </tbody>
-      </Table>    
-      <p className='text-center' style={{ color: 'red' }}>*** {quorum.toString()} votes required to reach a quorum</p>
+      </Table>
+      <p className='text-center' style={{ color: 'red' }}>
+        *** {quorum.toString()} votes required to reach a quorum
+      </p>
     </>
   )
 }

@@ -23,6 +23,7 @@ function App() {
   const [daoTreasury, setDaoTreasury] = useState(0)
 
   const [token, setToken] = useState(null)
+  const [tokenSymbol, setTokenSymbol] = useState('')
 
   const [proposals, setProposals] = useState(null)
   const [hasVoted, setHasVoted] = useState(false)
@@ -42,6 +43,9 @@ function App() {
 
     const token = new ethers.Contract(config[chainId].token.address, TOKEN_ABI, provider)
     setToken(token)
+
+    const symbol = await token.symbol()
+    setTokenSymbol(symbol)
 
     // Fetch accounts
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
@@ -101,7 +105,9 @@ function App() {
           <Create provider={provider} dao={dao} setIsLoading={setIsLoading} />
 
           <hr />
-            <p className='text-center'><strong>Treasury Token Balance:</strong> {daoTreasury} DAPP</p>
+            <p className='text-center'>
+              <strong>Treasury Token Balance:</strong> {daoTreasury} {tokenSymbol}
+            </p>
           <hr />
 
           <h4 className='text-center'>Proposals</h4>
@@ -113,7 +119,8 @@ function App() {
             token={token}
             setIsLoading={setIsLoading}
             account={account}
-            hasVoted={hasVoted} />
+            hasVoted={hasVoted}
+            tokenSymbol={tokenSymbol} />
         </div>
       )}
     </Container>
